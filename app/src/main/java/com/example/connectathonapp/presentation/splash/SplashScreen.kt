@@ -55,7 +55,7 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Where interests spark connections.",
+                text = "Where interest's spark connections.",
                 fontSize = 16.sp,
                 color = Color(0xFF666666)
             )

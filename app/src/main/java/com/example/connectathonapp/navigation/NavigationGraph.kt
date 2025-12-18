@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.connectathonapp.presentation.home.Homescreen
+import com.example.connectathonapp.presentation.explore.Homescreen
 import com.example.connectathonapp.presentation.splash.SplashScreen
 
 sealed class Screen(val route: String) {
