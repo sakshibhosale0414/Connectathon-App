@@ -59,14 +59,16 @@ dependencies {
 
 
     // Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics.ktx)
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.auth.ktx)
+//    implementation(platform(libs.firebase.bom))
+//    implementation(libs.firebase.analytics.ktx)
+//    implementation(libs.firebase.firestore.ktx)
+//    implementation(libs.firebase.auth.ktx)
 
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
 
     // Testing
     testImplementation(libs.junit)
