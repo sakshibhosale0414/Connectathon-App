@@ -14,6 +14,7 @@ composeBom = "2024.09.00"
 navigationCompose = "2.7.0"
 firebaseBom = "33.3.0"
 hilt = "2.57.2"
+firebaseStorage = "22.0.1"
 
 [libraries]
 # Existing libraries
@@ -46,6 +47,7 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx" 
 # Hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "669435382904",
+    "project_id": "connectathon-d8c0e",
+    "storage_bucket": "connectathon-d8c0e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:669435382904:android:1a5cbfaa7a7d334d04b18d",
+        "android_client_info": {
+          "package_name": "com.example.connectathonapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeFtqqTcjzvno0Rpzf4GMOLR82Y3oV778"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
