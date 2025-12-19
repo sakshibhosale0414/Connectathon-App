@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import android.util.Log
 import com.example.connectathonapp.data.People
 
 @Composable
@@ -39,8 +40,20 @@ fun TinderCardStack(
     var currentIndex by rememberSaveable { mutableStateOf(0) }
 
     LaunchedEffect(people) { 
+        android.util.Log.d("TinderCardStack", "People list updated: ${people.size} people")
+        people.forEachIndexed { index, person ->
+            android.util.Log.d("TinderCardStack", "Person $index: ${person.name}, image=${person.image.take(50)}...")
+        }
         if (currentIndex >= people.size) {
             currentIndex = 0
+        }
+    }
+    
+    LaunchedEffect(currentIndex) {
+        android.util.Log.d("TinderCardStack", "Current index: $currentIndex, total: ${people.size}")
+        if (currentIndex < people.size) {
+            val person = people[currentIndex]
+            android.util.Log.d("TinderCardStack", "Current person: ${person.name}, age=${person.age}, domain=${person.domain}")
         }
     }
 
@@ -69,13 +82,14 @@ fun TinderCardStack(
                         .fillMaxHeight(0.75f),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Background cards (next 2 cards for depth effect)
+                    // Background cards (next 2 cards for depth effect) - render in reverse order for proper z-index
                     people.getOrNull(currentIndex + 2)?.let { person ->
                         BackgroundCard(
                             person = person,
                             offset = 20.dp,
                             scale = 0.90f,
-                            zIndex = 0f
+                            zIndex = 0f,
+                            modifier = Modifier.zIndex(0f)
                         )
                     }
 
@@ -84,35 +98,52 @@ fun TinderCardStack(
                             person = person,
                             offset = 12.dp,
                             scale = 0.94f,
-                            zIndex = 1f
+                            zIndex = 1f,
+                            modifier = Modifier.zIndex(1f)
                         )
                     }
 
                     // Main swipeable card
                     val person = people[currentIndex]
+                    
+                    // Debug logging
+                    LaunchedEffect(currentIndex) {
+                        android.util.Log.d("TinderCardStack", "Displaying card at index $currentIndex: ${person.name}")
+                    }
 
                     SwipeableCard(
                         modifier = Modifier
                             .fillMaxSize()
                             .zIndex(2f),
+                        cardKey = currentIndex, // Key to reset state when card changes
                         onSwipedLeft = {
+                            android.util.Log.d("TinderCardStack", "Swiped left on ${person.name}, moving to next card")
                             onSkip(person)
-                            if (currentIndex < people.size - 1) currentIndex++
+                            if (currentIndex < people.size - 1) {
+                                currentIndex++
+                            }
                         },
                         onSwipedRight = {
+                            android.util.Log.d("TinderCardStack", "Swiped right on ${person.name}, moving to next card")
                             onConnect(person)
-                            if (currentIndex < people.size - 1) currentIndex++
+                            if (currentIndex < people.size - 1) {
+                                currentIndex++
+                            }
                         }
                     ) {
                         ProfileCard(
                             person = person,
                             onConnect = {
                                 onConnect(person)
-                                if (currentIndex < people.size - 1) currentIndex++
+                                if (currentIndex < people.size - 1) {
+                                    currentIndex++
+                                }
                             },
                             onSkip = {
                                 onSkip(person)
-                                if (currentIndex < people.size - 1) currentIndex++
+                                if (currentIndex < people.size - 1) {
+                                    currentIndex++
+                                }
                             }
                         )
                     }
@@ -259,6 +290,8 @@ private fun BackgroundCard(
     zIndex: Float,
     modifier: Modifier = Modifier
 ) {
+    val imageUrl = person.image.ifEmpty { "https://via.placeholder.com/400" }
+    
     Card(
         shape = RoundedCornerShape(28.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -269,21 +302,106 @@ private fun BackgroundCard(
                 scaleX = scale
                 scaleY = scale
             }
-            .zIndex(zIndex)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            // Profile Image with slight blur
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(person.image.ifEmpty { "https://via.placeholder.com/400" })
+                    .data(imageUrl)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
-                    .blur(8.dp),
-                contentScale = ContentScale.Crop,
-                alpha = 0.5f
+                    .blur(2.dp),
+                contentScale = ContentScale.Crop
             )
+
+            // Gradient Overlay
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(320.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.7f)
+                            )
+                        )
+                    )
+            )
+
+            // Profile Info (with reduced opacity for depth effect)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(24.dp)
+                    .graphicsLayer { alpha = 0.9f },
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Name and Age
+                Text(
+                    text = "${person.name}, ${person.age}",
+                    color = Color.White,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+
+                // Domain badge
+                if (person.domain.isNotEmpty()) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    ) {
+                        Text(
+                            text = person.domain,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+
+                // Bio
+                Text(
+                    text = person.bio,
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 15.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = 20.sp
+                )
+
+                // Interests
+                if (person.interests.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        person.interests.take(2).forEach { interest ->
+                            Surface(
+                                color = Color.White.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = interest,
+                                    color = Color.White,
+                                    fontSize = 11.sp,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -28,13 +29,20 @@ fun SwipeableCard(
     modifier: Modifier = Modifier,
     onSwipedLeft: () -> Unit,
     onSwipedRight: () -> Unit,
+    cardKey: Any = Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val offsetX = remember { Animatable(0f) }
-    val rotation = remember { Animatable(0f) }
+    val offsetX = remember(cardKey) { Animatable(0f) }
+    val rotation = remember(cardKey) { Animatable(0f) }
     val scope = rememberCoroutineScope()
     val threshold = 200f
     val maxRotation = 15f
+
+    // Reset position when card changes
+    LaunchedEffect(cardKey) {
+        offsetX.snapTo(0f)
+        rotation.snapTo(0f)
+    }
 
     Box(
         modifier = modifier
@@ -43,7 +51,7 @@ fun SwipeableCard(
                 rotationZ = rotation.value
                 alpha = 1f - kotlin.math.abs(offsetX.value) / 1000f
             }
-            .pointerInput(Unit) {
+            .pointerInput(cardKey) {
                 detectDragGestures(
                     onDrag = { _, dragAmount ->
                         scope.launch {
@@ -55,9 +63,24 @@ fun SwipeableCard(
                     onDragEnd = {
                         scope.launch {
                             when {
-                                offsetX.value > threshold -> { offsetX.animateTo(2000f); rotation.animateTo(maxRotation); onSwipedRight() }
-                                offsetX.value < -threshold -> { offsetX.animateTo(-2000f); rotation.animateTo(-maxRotation); onSwipedLeft() }
-                                else -> { offsetX.animateTo(0f); rotation.animateTo(0f) }
+                                offsetX.value > threshold -> { 
+                                    offsetX.animateTo(2000f, spring())
+                                    rotation.animateTo(maxRotation, spring())
+                                    // Small delay to ensure animation completes
+                                    delay(100)
+                                    onSwipedRight()
+                                }
+                                offsetX.value < -threshold -> { 
+                                    offsetX.animateTo(-2000f, spring())
+                                    rotation.animateTo(-maxRotation, spring())
+                                    // Small delay to ensure animation completes
+                                    delay(100)
+                                    onSwipedLeft()
+                                }
+                                else -> { 
+                                    offsetX.animateTo(0f, spring())
+                                    rotation.animateTo(0f, spring())
+                                }
                             }
                         }
                     }

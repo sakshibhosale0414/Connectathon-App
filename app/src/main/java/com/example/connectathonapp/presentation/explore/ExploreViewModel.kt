@@ -42,8 +42,13 @@ class ExploreViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
                 allPeople = repository.fetchPeople()
+                android.util.Log.d("ExploreViewModel", "Fetched ${allPeople.size} people")
+                allPeople.forEachIndexed { index, person ->
+                    android.util.Log.d("ExploreViewModel", "Person $index: ${person.name}, age=${person.age}, domain=${person.domain}, image=${person.image.take(50)}...")
+                }
                 applyFiltersToLoadedCards()
             } catch (e: Exception) {
+                android.util.Log.e("ExploreViewModel", "Error fetching people", e)
                 _uiState.value = ExploreUiState(error = e.message)
             }
         }
@@ -61,6 +66,7 @@ class ExploreViewModel @Inject constructor(
             val interestMatch = _selectedInterest.value?.let { person.interests.contains(it) } ?: true
             domainMatch && interestMatch
         }
+        android.util.Log.d("ExploreViewModel", "Filtered to ${filtered.size} people")
         _uiState.value = _uiState.value.copy(people = filtered, isLoading = false)
     }
 

@@ -79,7 +79,6 @@ fun ExploreScreen(
                             }
                         },
                         onSkip = { person ->
-                            // Skip action - can be extended later
                         }
                     )
                 }
