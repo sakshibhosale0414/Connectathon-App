@@ -25,8 +25,13 @@ class ExploreViewModel @Inject constructor(
     private val _connectionMessage = MutableSharedFlow<String>()
     val connectionMessage = _connectionMessage.asSharedFlow()
 
-    private var currentDomain: String? = null
-    private var currentInterest: String? = null
+    private val _selectedDomain = MutableStateFlow<String?>(null)
+    val selectedDomain: StateFlow<String?> = _selectedDomain.asStateFlow()
+
+    private val _selectedInterest = MutableStateFlow<String?>(null)
+    val selectedInterest: StateFlow<String?> = _selectedInterest.asStateFlow()
+
+    private var allPeople: List<People> = emptyList()
 
     init {
         fetchPeople()
@@ -36,8 +41,8 @@ class ExploreViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
-                val data = repository.fetchPeople()
-                _uiState.value = ExploreUiState(people = data)
+                allPeople = repository.fetchPeople()
+                applyFiltersToLoadedCards()
             } catch (e: Exception) {
                 _uiState.value = ExploreUiState(error = e.message)
             }
@@ -45,23 +50,23 @@ class ExploreViewModel @Inject constructor(
     }
 
     fun applyFilter(domain: String?, interest: String?) {
-        currentDomain = domain
-        currentInterest = interest
+        _selectedDomain.value = domain
+        _selectedInterest.value = interest
+        applyFiltersToLoadedCards()
+    }
 
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            try {
-                val data = repository.fetchFilteredPeople(domain, interest)
-                _uiState.value = ExploreUiState(people = data)
-            } catch (e: Exception) {
-                _uiState.value = ExploreUiState(error = e.message)
-            }
+    private fun applyFiltersToLoadedCards() {
+        val filtered = allPeople.filter { person ->
+            val domainMatch = _selectedDomain.value?.let { it == person.domain } ?: true
+            val interestMatch = _selectedInterest.value?.let { person.interests.contains(it) } ?: true
+            domainMatch && interestMatch
         }
+        _uiState.value = _uiState.value.copy(people = filtered, isLoading = false)
     }
 
     fun connect(person: People) {
         viewModelScope.launch {
-            _connectionMessage.emit("✨ Connection built with ${person.name}!")
+            _connectionMessage.emit("✨ Connected with ${person.name}!")
         }
     }
 }

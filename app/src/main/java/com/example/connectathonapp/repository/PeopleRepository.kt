@@ -1,5 +1,6 @@
 package com.example.connectathonapp.repository
 
+import android.util.Log
 import com.example.connectathonapp.data.People
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -19,11 +20,18 @@ class PeopleRepository @Inject constructor(
             firestore.collection("people")
                 .get()
                 .addOnSuccessListener { result ->
-                    cont.resume(
-                        result.toObjects(People::class.java)
-                    )
+
+                    // ✅ DEBUG LOGS
+                    Log.d("Firestore", "fetchPeople → Docs fetched: ${result.size()}")
+                    val list = result.toObjects(People::class.java)
+                    Log.d("Firestore", "fetchPeople → Mapped objects: ${list.size}")
+
+                    cont.resume(list)
                 }
-                .addOnFailureListener { cont.resumeWithException(it) }
+                .addOnFailureListener { exception ->
+                    Log.e("Firestore", "fetchPeople → Error", exception)
+                    cont.resumeWithException(exception)
+                }
         }
 
     suspend fun fetchFilteredPeople(
@@ -44,10 +52,17 @@ class PeopleRepository @Inject constructor(
 
             query.get()
                 .addOnSuccessListener { result ->
-                    cont.resume(
-                        result.toObjects(People::class.java)
-                    )
+
+                    // ✅ DEBUG LOGS
+                    Log.d("Firestore", "fetchFilteredPeople → Docs fetched: ${result.size()}")
+                    val list = result.toObjects(People::class.java)
+                    Log.d("Firestore", "fetchFilteredPeople → Mapped objects: ${list.size}")
+
+                    cont.resume(list)
                 }
-                .addOnFailureListener { cont.resumeWithException(it) }
+                .addOnFailureListener { exception ->
+                    Log.e("Firestore", "fetchFilteredPeople → Error", exception)
+                    cont.resumeWithException(exception)
+                }
         }
 }
