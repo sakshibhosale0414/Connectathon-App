@@ -42,6 +42,10 @@ android {
     }
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
 dependencies {
     // Core
     implementation(libs.androidx.core.ktx)
@@ -60,14 +64,20 @@ dependencies {
 
 
     // Firebase
-//    implementation(platform(libs.firebase.bom))
+    implementation(platform(libs.firebase.bom))
 //    implementation(libs.firebase.analytics.ktx)
 //    implementation(libs.firebase.firestore.ktx)
 //    implementation(libs.firebase.auth.ktx)
 
+    implementation(libs.firebase.firestore.ktx)
+
+    // Storage (for profile images)
+    implementation(libs.firebase.storage.ktx)
+
     // Hilt
     implementation(libs.hilt.android)
-    implementation(libs.firebase.storage)
+    implementation(libs.coil.compose)
+
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
